@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isaiah — Morning Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;--bg2:#101010;--bg3:#181818;--bg4:#222;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#f0ede6;--muted:#666360;--muted2:#999590;
+  --accent:#c8f060;--accent2:#a8d040;--accent-dim:rgba(200,240,96,0.08);
+  --red:#ff5a5a;--amber:#f0a030;--blue:#5ab4f0;--teal:#38d0a0;--purple:#a080f0;
+  --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+}
+html{font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.94);backdrop-filter:blur(14px)}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.brand-name{font-family:var(--font-d);font-weight:700;font-size:15px;letter-spacing:.04em}
+.topbar-center{font-family:var(--font-m);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.time-display{font-family:var(--font-m);font-size:13px;color:var(--muted2)}
+.status-badge{padding:4px 10px;border-radius:4px;font-size:11px;font-family:var(--font-m);letter-spacing:.05em;cursor:pointer}
+.status-badge.connected{background:rgba(56,208,160,.12);color:var(--teal);border:1px solid rgba(56,208,160,.2)}
+.status-badge.disconnected{background:rgba(255,90,90,.1);color:var(--red);border:1px solid rgba(255,90,90,.2)}
+
+.main{padding:24px 28px;display:grid;gap:20px;max-width:1400px;margin:0 auto}
+.grid-top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-mid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.grid-bot{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap}
+.card-title{display:flex;align-items:center;gap:8px;font-family:var(--font-d);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
+.card-body{padding:16px 18px}
+.card-action{padding:6px 12px;border-radius:6px;font-size:11px;font-family:var(--font-m);cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted2);transition:all .2s;letter-spacing:.04em;white-space:nowrap}
+.card-action:hover{background:var(--bg3);color:var(--text);border-color:var(--muted)}
+
+.greeting-card{background:linear-gradient(135deg,#0f1a08 0%,#101410 50%,#080f14 100%);border:1px solid rgba(200,240,96,.12);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden}
+.greeting-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(200,240,96,.06) 0%,transparent 70%);pointer-events:none}
+.greeting-name{font-family:var(--font-d);font-weight:800;font-size:26px;line-height:1.1}
+.greeting-name span{color:var(--accent)}
+.greeting-sub{font-size:13px;color:var(--muted2);margin-top:6px;font-weight:300}
+.greeting-date{font-family:var(--font-m);font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:.05em}
+.score-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.score-pill{padding:5px 12px;border-radius:6px;font-size:11px;font-family:var(--font-m);font-weight:500}
+.score-pill.ironman{background:rgba(90,180,240,.1);color:var(--blue);border:1px solid rgba(90,180,240,.2)}
+.score-pill.exam{background:rgba(200,240,96,.1);color:var(--accent);border:1px solid rgba(200,240,96,.2)}
+.score-pill.ig{background:rgba(160,128,240,.1);color:var(--purple);border:1px solid rgba(160,128,240,.2)}
+
+.priority-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.priority-item:last-child{border-bottom:none}
+.p-rank{font-family:var(--font-m);font-size:10px;color:var(--muted);min-width:18px}
+.p-bar-wrap{flex:1}
+.p-label{font-size:13px;color:var(--text);margin-bottom:3px}
+.p-bar{height:3px;border-radius:2px;background:var(--bg4)}
+.p-fill{height:3px;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.p-pct{font-family:var(--font-m);font-size:11px;color:var(--muted2);min-width:32px;text-align:right}
+
+.email-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;border-radius:4px;padding-left:4px}
+.email-item:last-child{border-bottom:none}
+.email-item:hover{background:var(--bg3)}
+.email-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.email-dot.high{background:var(--red)}
+.email-dot.med{background:var(--amber)}
+.email-dot.low{background:var(--muted)}
+.email-content{flex:1;min-width:0}
+.email-from{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-subject{font-size:11px;color:var(--muted2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-badge{font-size:10px;font-family:var(--font-m);padding:2px 6px;border-radius:3px;margin-top:3px;display:inline-block}
+.email-badge.urgent{background:rgba(255,90,90,.12);color:var(--red)}
+.email-badge.follow{background:rgba(240,160,48,.12);color:var(--amber)}
+.email-badge.info{background:rgba(90,180,240,.1);color:var(--blue)}
+.email-time{font-family:var(--font-m);font-size:10px;color:var(--muted);flex-shrink:0}
+
+.gmail-connect-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;gap:12px;text-align:center}
+.gmail-connect-area p{font-size:13px;color:var(--muted2);line-height:1.6;max-width:280px}
+.btn-connect{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;background:var(--accent-dim);border:1px solid rgba(200,240,96,.25);color:var(--accent);font-family:var(--font-m);font-size:12px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+.btn-connect:hover{background:rgba(200,240,96,.15);border-color:rgba(200,240,96,.4)}
+
+.cal-upload{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center;border:1px dashed var(--border2);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.cal-upload:hover{border-color:rgba(200,240,96,.3);background:var(--accent-dim)}
+.cal-upload p{font-size:12px;color:var(--muted2);line-height:1.5}
+.cal-upload span{font-size:11px;color:var(--muted);font-family:var(--font-m)}
+.cal-event{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.cal-event:last-child{border-bottom:none}
+.cal-time-col{min-width:52px;font-family:var(--font-m);font-size:10px;color:var(--muted);line-height:1.4;padding-top:2px}
+.cal-dot{width:3px;border-radius:2px;min-height:32px;flex-shrink:0;margin-top:4px}
+.cal-info{flex:1}
+.cal-title{font-size:13px;font-weight:500;color:var(--text)}
+.cal-meta{font-size:11px;color:var(--muted2);margin-top:2px}
+.cal-hint{font-size:11px;color:var(--muted);line-height:1.6;padding:10px;background:var(--bg3);border-radius:8px}
+.cal-hint b{color:var(--muted2)}
+
+.briefing-area{min-height:80px;font-size:13px;color:var(--muted2);line-height:1.8;white-space:pre-wrap}
+.btn-briefing{width:100%;padding:11px;border-radius:8px;background:var(--accent-dim);border:1px solid rgba(200,240,96,.2);color:var(--accent);font-family:var(--font-m);font-size:12px;cursor:pointer;transition:all .2s;letter-spacing:.04em;margin-top:12px}
+.btn-briefing:hover{background:rgba(200,240,96,.14)}
+.btn-briefing:disabled{opacity:.4;cursor:not-allowed}
+
+.task-input-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.task-input{flex:1;min-width:120px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font-b);font-size:13px;outline:none;transition:border-color .2s}
+.task-input:focus{border-color:rgba(200,240,96,.3)}
+.task-input::placeholder{color:var(--muted)}
+.task-track-select{padding:9px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--muted2);font-family:var(--font-m);font-size:11px;outline:none;cursor:pointer}
+.btn-add-task{padding:9px 14px;background:var(--accent);border:none;border-radius:7px;color:#080808;font-family:var(--font-m);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-add-task:hover{background:var(--accent2)}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.task-check:hover{border-color:var(--accent)}
+.task-check.done{background:var(--accent);border-color:var(--accent)}
+.task-check.done svg{display:block}
+.task-check svg{display:none;width:9px;height:9px}
+.task-text{flex:1;font-size:13px;color:var(--text);line-height:1.4}
+.task-text.done{text-decoration:line-through;color:var(--muted)}
+.task-track-badge{font-size:10px;font-family:var(--font-m);padding:2px 7px;border-radius:3px;flex-shrink:0}
+.task-track-badge.exam{background:rgba(200,240,96,.1);color:var(--accent)}
+.task-track-badge.ironman{background:rgba(90,180,240,.1);color:var(--blue)}
+.task-track-badge.ig{background:rgba(160,128,240,.1);color:var(--purple)}
+.task-track-badge.gcu{background:rgba(56,208,160,.1);color:var(--teal)}
+.task-del{width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);border-radius:3px;transition:color .15s;flex-shrink:0}
+.task-del:hover{color:var(--red)}
+
+.ig-remind{display:flex;flex-direction:column;gap:12px}
+.ig-timer{text-align:center;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
+.ig-countdown{font-family:var(--font-m);font-size:28px;color:var(--purple);letter-spacing:.06em}
+.ig-label{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.05em}
+.ig-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ig-stat{padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)}
+.ig-stat-val{font-family:var(--font-m);font-size:18px;font-weight:500}
+.ig-stat-lbl{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+.btn-ig{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:8px;background:rgba(160,128,240,.1);border:1px solid rgba(160,128,240,.2);color:var(--purple);font-family:var(--font-m);font-size:12px;cursor:pointer;transition:all .2s;text-decoration:none;letter-spacing:.04em}
+.btn-ig:hover{background:rgba(160,128,240,.18)}
+.ig-check-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.ig-check-row:last-child{border-bottom:none}
+.ig-check-label{font-size:12px;color:var(--muted2)}
+.ig-check-val{font-family:var(--font-m);font-size:11px;color:var(--muted)}
+
+.training-session{background:var(--bg3);border-radius:9px;padding:12px 14px;border:1px solid var(--border);margin-bottom:8px}
+.training-session:last-child{margin-bottom:0}
+.session-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.session-type{font-family:var(--font-d);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.session-type.swim{color:var(--blue)}
+.session-type.bike{color:var(--amber)}
+.session-type.run{color:var(--teal)}
+.session-type.rest{color:var(--muted2)}
+.session-time{font-family:var(--font-m);font-size:11px;color:var(--muted)}
+.session-desc{font-size:12px;color:var(--muted2);line-height:1.5}
+.session-metrics{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.metric-chip{padding:3px 8px;border-radius:4px;font-family:var(--font-m);font-size:10px;background:var(--bg4);color:var(--muted2)}
+.race-countdown{background:linear-gradient(135deg,rgba(90,180,240,.06),rgba(160,128,240,.06));border:1px solid rgba(90,180,240,.15);border-radius:9px;padding:12px 14px;text-align:center;margin-bottom:12px}
+.race-days{font-family:var(--font-d);font-weight:800;font-size:32px;color:var(--blue);line-height:1}
+.race-label{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.05em}
+.race-name{font-size:12px;color:var(--muted2);margin-top:6px}
+
+.vip-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.vip-item:last-child{border-bottom:none}
+.vip-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:12px;flex-shrink:0}
+.vip-info{flex:1}
+.vip-name{font-size:13px;font-weight:500}
+.vip-role{font-size:11px;color:var(--muted2)}
+.vip-responded{font-size:10px;font-family:var(--font-m);padding:2px 7px;border-radius:3px}
+.vip-responded.yes{background:rgba(56,208,160,.1);color:var(--teal)}
+.vip-responded.no{background:rgba(255,90,90,.1);color:var(--red)}
+.vip-toggle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.vip-toggle.done{background:var(--teal);border-color:var(--teal)}
+.vip-input-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.vip-input{flex:1;min-width:90px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font-b);font-size:12px;outline:none;transition:border-color .2s}
+.vip-input:focus{border-color:rgba(200,240,96,.3)}
+.vip-input::placeholder{color:var(--muted)}
+.btn-vip-add{padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--muted2);font-family:var(--font-m);font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-vip-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* SETUP MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h2{font-family:var(--font-d);font-size:18px;font-weight:700;margin-bottom:6px}
+.modal p{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px}
+.modal-input{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-m);font-size:13px;outline:none;margin-bottom:10px;transition:border-color .2s}
+.modal-input:focus{border-color:rgba(200,240,96,.4)}
+.modal-input::placeholder{color:var(--muted)}
+.modal-save{width:100%;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#080808;font-family:var(--font-m);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.modal-save:hover{background:var(--accent2)}
+.modal-hint{font-size:11px;color:var(--muted);line-height:1.7;background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px}
+.modal-hint b{color:var(--muted2)}
+.modal-hint code{font-family:var(--font-m);background:var(--bg4);padding:1px 5px;border-radius:3px;font-size:10px}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:12px;font-family:var(--font-m);color:var(--text);z-index:999;transform:translateY(60px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:960px){.grid-top,.grid-mid,.grid-bot{grid-template-columns:1fr}.topbar-center{display:none}}
+@media(max-width:500px){.main{padding:16px 14px}.topbar{padding:12px 16px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">COMMAND CENTER</span>
+  </div>
+  <div class="topbar-center" id="topbar-date">—</div>
+  <div class="topbar-right">
+    <span class="time-display" id="topbar-time">—</span>
+    <span class="status-badge disconnected" id="gmail-badge" onclick="openSetup()">GMAIL: OFF</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="grid-top">
+    <div class="greeting-card">
+      <div class="greeting-name">GM, <span>Isaiah.</span></div>
+      <div class="greeting-sub">Let's get after it — here's your day.</div>
+      <div class="greeting-date" id="greeting-date">—</div>
+      <div class="score-row">
+        <span class="score-pill exam">EXAM PREP</span>
+        <span class="score-pill ironman">IRONMAN</span>
+        <span class="score-pill ig">BRAND</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Life priorities</span>
+      </div>
+      <div class="card-body">
+        <div class="priority-item"><span class="p-rank">01</span><div class="p-bar-wrap"><div class="p-label">Financial advisor exam</div><div class="p-bar"><div class="p-fill" style="width:0%;background:var(--accent)" data-target="92"></div></div></div><span class="p-pct">92%</span></div>
+        <div class="priority-item"><span class="p-rank">02</span><div class="p-bar-wrap"><div class="p-label">Ironman training</div><div class="p-bar"><div class="p-fill" style="width:0%;background:var(--blue)" data-target="78"></div></div></div><span class="p-pct">78%</span></div>
+        <div class="priority-item"><span class="p-rank">03</span><div class="p-bar-wrap"><div class="p-label">Instagram / brand deals</div><div class="p-bar"><div class="p-fill" style="width:0%;background:var(--purple)" data-target="55"></div></div></div><span class="p-pct">55%</span></div>
+        <div class="priority-item"><span class="p-rank">04</span><div class="p-bar-wrap"><div class="p-label">GCU coursework</div><div class="p-bar"><div class="p-fill" style="width:0%;background:var(--teal)" data-target="40"></div></div></div><span class="p-pct">40%</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Training today</span></div>
+      <div class="card-body">
+        <div class="race-countdown">
+          <div class="race-days" id="race-days">—</div>
+          <div class="race-label">DAYS TO RACE</div>
+          <div class="race-name">Ironman 70.3 Waco · Oct 4, 2025</div>
+        </div>
+        <div id="training-sessions"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-mid">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Gmail — overnight</span>
+        <div style="display:flex;gap:6px">
+          <button class="card-action" onclick="fetchGmail()">Refresh</button>
+          <button class="card-action" onclick="openSetup()">Setup</button>
+        </div>
+      </div>
+      <div class="card-body" id="gmail-body">
+        <div class="gmail-connect-area">
+          <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" opacity=".3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <p>Connect Gmail to surface your important overnight emails — scored by urgency.</p>
+          <button class="btn-connect" onclick="openSetup()">Connect Gmail →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Apple Calendar</span>
+        <button class="card-action" onclick="document.getElementById('ics-input').click()">Import .ics</button>
+        <input type="file" id="ics-input" accept=".ics" style="display:none" onchange="loadICS(event)">
+      </div>
+      <div class="card-body" id="cal-body">
+        <div class="cal-upload" onclick="document.getElementById('ics-input').click()">
+          <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" opacity=".4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <p>Import Apple Calendar events</p>
+          <span>Click to upload .ics file</span>
+        </div>
+        <div class="cal-hint"><b>Export from Apple Calendar:</b><br>Calendar app → File → Export → Export... → upload here</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-bot">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">AI Morning Briefing</span>
+        <button class="card-action" onclick="generateBriefing()">Generate</button>
+      </div>
+      <div class="card-body">
+        <div class="briefing-area" id="briefing-output">Hit "Generate" — Claude reads your Gmail, calendar, and tasks then writes your personalized daily brief.</div>
+        <button class="btn-briefing" id="briefing-btn" onclick="generateBriefing()">⚡ Generate my morning briefing</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Today's tasks</span>
+        <span id="task-count" style="font-size:11px;font-family:var(--font-m);color:var(--muted)">0 done</span>
+      </div>
+      <div class="card-body">
+        <div class="task-input-row">
+          <input class="task-input" id="task-input" type="text" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()">
+          <select class="task-track-select" id="task-track">
+            <option value="exam">Exam</option>
+            <option value="ironman">Ironman</option>
+            <option value="ig">Brand</option>
+            <option value="gcu">GCU</option>
+          </select>
+          <button class="btn-add-task" onclick="addTask()">+ Add</button>
+        </div>
+        <div id="task-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-bot">
+    <div class="card">
+      <div class="card-header"><span class="card-title">VIP contact tracker</span></div>
+      <div class="card-body">
+        <div id="vip-list"></div>
+        <div class="vip-input-row">
+          <input class="vip-input" id="vip-name" placeholder="Name" style="max-width:120px">
+          <input class="vip-input" id="vip-role" placeholder="Role">
+          <button class="btn-vip-add" onclick="addVIP()">+ Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Instagram reminders</span></div>
+      <div class="card-body">
+        <div class="ig-remind">
+          <div class="ig-timer">
+            <div class="ig-countdown" id="ig-countdown">—</div>
+            <div class="ig-label">UNTIL DM CHECK</div>
+          </div>
+          <div class="ig-stats">
+            <div class="ig-stat"><div class="ig-stat-val" id="ig-streak" style="color:var(--amber)">0</div><div class="ig-stat-lbl">DAY STREAK</div></div>
+            <div class="ig-stat"><div class="ig-stat-val" id="ig-done-count" style="color:var(--teal)">0/3</div><div class="ig-stat-lbl">DONE TODAY</div></div>
+          </div>
+          <div>
+            <div class="ig-check-row"><span class="ig-check-label">Morning DM sweep</span><span class="ig-check-val" id="c-morning" style="cursor:pointer" onclick="markIG('morning')">Tap to complete</span></div>
+            <div class="ig-check-row"><span class="ig-check-label">Respond to inquiries</span><span class="ig-check-val" id="c-reply" style="cursor:pointer" onclick="markIG('reply')">Tap to complete</span></div>
+            <div class="ig-check-row"><span class="ig-check-label">Post / story check</span><span class="ig-check-val" id="c-post" style="cursor:pointer" onclick="markIG('post')">Tap to complete</span></div>
+          </div>
+          <a href="https://www.instagram.com/direct/inbox/" target="_blank" class="btn-ig">Open Instagram DMs →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GMAIL SETUP MODAL -->
+<div class="modal-overlay" id="setup-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSetup()">×</button>
+    <h2>Connect Gmail</h2>
+    <p>Paste your Google OAuth Client ID below. You only do this once — it saves in your browser.</p>
+    <div class="modal-hint">
+      <b>Where to get your Client ID:</b><br>
+      1. Go to <b>console.cloud.google.com</b><br>
+      2. Create project → Enable Gmail API<br>
+      3. APIs &amp; Services → Credentials → Create OAuth Client ID<br>
+      4. Application type: <b>Web application</b><br>
+      5. Authorized redirect URIs → add: <code id="redirect-uri-display">https://YOUR-USERNAME.github.io/isaiah-dashboard/</code><br>
+      6. Copy the Client ID and paste it below
+    </div>
+    <input class="modal-input" id="client-id-input" type="text" placeholder="123456789-abc...apps.googleusercontent.com">
+    <button class="modal-save" onclick="saveClientId()">Save &amp; Connect Gmail →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let accessToken = localStorage.getItem('gmail_token') || null;
+let gmailEmails = [];
+let calEvents = [];
+let tasks = JSON.parse(localStorage.getItem('iz_tasks') || '[]');
+let vips = JSON.parse(localStorage.getItem('iz_vips') || 'null') || [
+  {name:'Mom',role:'Family',color:'#c8f060',initials:'MO',responded:false},
+  {name:'Equitable Manager',role:'Financial advisor',color:'#5ab4f0',initials:'EQ',responded:false},
+  {name:'Coach',role:'Ironman training',color:'#38d0a0',initials:'CO',responded:false},
+];
+let igState = JSON.parse(localStorage.getItem('iz_ig') || 'null') || {streak:0,morning:false,reply:false,post:false};
+
+function getClientId(){ return localStorage.getItem('gmail_client_id') || ''; }
+
+// ── CLOCK ──
+function tick(){
+  const now = new Date();
+  const ds = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('topbar-date').textContent = ds.toUpperCase();
+  document.getElementById('topbar-time').textContent = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('greeting-date').textContent = ds.toUpperCase();
+  updateIGCountdown(now);
+}
+setInterval(tick,1000); tick();
+
+// ── RACE COUNTDOWN ──
+function raceCountdown(){
+  const diff = Math.ceil((new Date('2025-10-04') - new Date())/(864e5));
+  document.getElementById('race-days').textContent = diff > 0 ? diff : 'RACE DAY!';
+}
+raceCountdown();
+
+// ── PRIORITY BARS ──
+setTimeout(()=>{ document.querySelectorAll('.p-fill').forEach(el=>{ el.style.width=el.dataset.target+'%'; }); },300);
+
+// ── TRAINING ──
+function renderTraining(){
+  const day = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+  const s = {
+    Monday:[{t:'swim',l:'Swim',d:'1500m aerobic base. Focus on stroke efficiency.',m:['1500m','45 min','Z2']},{t:'run',l:'Run',d:'5km easy. Keep HR under 145.',m:['5km','30 min','easy']}],
+    Tuesday:[{t:'bike',l:'Bike',d:'45min threshold. 3×10min at 85% FTP.',m:['45 min','3×10 int','Z3-4']}],
+    Wednesday:[{t:'swim',l:'Swim',d:'Technique drills + 800m time trial.',m:['1200m','40 min','drills']},{t:'run',l:'Brick run',d:'20min off the bike. Stay aerobic.',m:['3km','20 min','brick']}],
+    Thursday:[{t:'bike',l:'Long ride',d:'Z2 aerobic. Keep HR steady throughout.',m:['60km','2.5 hr','Z2']}],
+    Friday:[{t:'swim',l:'Swim',d:'Open water sim. Race pace sets.',m:['2000m','55 min','race pace']}],
+    Saturday:[{t:'bike',l:'Long ride + brick',d:'Race simulation. Smooth T2 practice.',m:['90km','3 hr','race sim']},{t:'run',l:'Brick run',d:'20min off long bike. Practice T2 transition.',m:['3km','20 min','T2 sim']}],
+    Sunday:[{t:'rest',l:'Rest & Recovery',d:'Active recovery. Walk, stretch, foam roll.',m:['rest','easy','mobility']}],
+  };
+  const sessions = s[day]||[{t:'rest',l:'Recovery',d:'Light movement only.',m:['rest']}];
+  document.getElementById('training-sessions').innerHTML = sessions.map(x=>`
+    <div class="training-session">
+      <div class="session-header"><span class="session-type ${x.t}">${x.l}</span><span class="session-time">${day}</span></div>
+      <div class="session-desc">${x.d}</div>
+      <div class="session-metrics">${x.m.map(m=>`<span class="metric-chip">${m}</span>`).join('')}</div>
+    </div>`).join('');
+}
+renderTraining();
+
+// ── GMAIL OAUTH ──
+function openSetup(){
+  document.getElementById('redirect-uri-display').textContent = window.location.href.split('?')[0].split('#')[0];
+  const saved = getClientId();
+  if(saved) document.getElementById('client-id-input').value = saved;
+  document.getElementById('setup-modal').classList.add('show');
+}
+function closeSetup(){ document.getElementById('setup-modal').classList.remove('show'); }
+
+function saveClientId(){
+  const id = document.getElementById('client-id-input').value.trim();
+  if(!id){ showToast('Paste your Client ID first'); return; }
+  localStorage.setItem('gmail_client_id',id);
+  closeSetup();
+  startOAuth(id);
+}
+
+function startOAuth(clientId){
+  const redirectUri = window.location.href.split('?')[0].split('#')[0];
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    prompt: 'consent'
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/auth?' + params;
+}
+
+function checkOAuthCallback(){
+  const hash = window.location.hash;
+  if(hash.includes('access_token')){
+    const p = new URLSearchParams(hash.substring(1));
+    const token = p.get('access_token');
+    if(token){
+      accessToken = token;
+      localStorage.setItem('gmail_token', token);
+      history.replaceState(null,null,window.location.pathname);
+      setGmailConnected(true);
+      fetchGmail();
+    }
+  } else if(accessToken){
+    setGmailConnected(true);
+    fetchGmail();
+  }
+}
+
+function setGmailConnected(on){
+  const b = document.getElementById('gmail-badge');
+  b.textContent = on ? 'GMAIL: ON' : 'GMAIL: OFF';
+  b.className = 'status-badge ' + (on?'connected':'disconnected');
+}
+
+async function fetchGmail(){
+  if(!accessToken){ showToast('Connect Gmail first — click GMAIL: OFF'); return; }
+  const body = document.getElementById('gmail-body');
+  body.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:13px;text-align:center">Loading emails...</div>';
+  try {
+    const since = Math.floor((Date.now()-8*36e5)/1000);
+    const r = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread after:${since}&maxResults=20`,{headers:{Authorization:`Bearer ${accessToken}`}});
+    if(r.status===401){ accessToken=null; localStorage.removeItem('gmail_token'); setGmailConnected(false); body.innerHTML='<div style="padding:20px;color:var(--red);font-size:13px;text-align:center">Session expired — click GMAIL: OFF to reconnect.</div>'; return; }
+    const data = await r.json();
+    if(!data.messages){ body.innerHTML='<div style="padding:20px;color:var(--muted);font-size:13px;text-align:center">No unread emails overnight.</div>'; return; }
+    const msgs = await Promise.all(data.messages.slice(0,12).map(m=>
+      fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,{headers:{Authorization:`Bearer ${accessToken}`}}).then(r=>r.json())
+    ));
+    gmailEmails = msgs.map(m=>{
+      const h = m.payload?.headers||[];
+      const g = n=>h.find(x=>x.name===n)?.value||'';
+      return {from:g('From').replace(/<[^>]+>/,'').trim(),subject:g('Subject'),date:g('Date'),snippet:m.snippet||''};
+    });
+    renderEmails();
+  } catch(e){ body.innerHTML='<div style="padding:20px;color:var(--red);font-size:13px">Error loading emails.</div>'; }
+}
+
+function renderEmails(){
+  const kw = {high:['urgent','asap','today','deadline','payment','invoice','offer','contract','exam'],med:['follow up','reply','response','meeting','schedule','call']};
+  const scored = gmailEmails.map(e=>{
+    const t=(e.subject+' '+e.snippet).toLowerCase();
+    const p=kw.high.some(k=>t.includes(k))?'high':kw.med.some(k=>t.includes(k))?'med':'low';
+    return {...e,p};
+  }).sort((a,b)=>({high:0,med:1,low:2}[a.p]-{high:0,med:1,low:2}[b.p]));
+  document.getElementById('gmail-body').innerHTML = scored.map(e=>`
+    <div class="email-item">
+      <div class="email-dot ${e.p}"></div>
+      <div class="email-content">
+        <div class="email-from">${e.from||'Unknown'}</div>
+        <div class="email-subject">${e.subject||'(no subject)'}</div>
+        <span class="email-badge ${e.p==='high'?'urgent':e.p==='med'?'follow':'info'}">${e.p==='high'?'URGENT':e.p==='med'?'FOLLOW UP':'INFO'}</span>
+      </div>
+      <div class="email-time">${fmtTime(e.date)}</div>
+    </div>`).join('');
+}
+
+function fmtTime(d){ try{ return new Date(d).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+
+// ── APPLE CALENDAR ──
+function loadICS(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => { parseICS(ev.target.result); showToast('Calendar imported!'); };
+  r.readAsText(file);
+}
+
+function parseICS(txt){
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const events = [];
+  txt.split('BEGIN:VEVENT').slice(1).forEach(b=>{
+    const g = k=>{ const m=b.match(new RegExp(k+'[^:]*:([^\\r\\n]+)')); return m?m[1].trim():''; };
+    const dtstart=g('DTSTART'), summary=g('SUMMARY'), location=g('LOCATION');
+    if(!summary||dtstart.slice(0,8)!==today) return;
+    const t=dtstart.includes('T')?dtstart.slice(9,13):'';
+    events.push({summary,time:t?`${t.slice(0,2)}:${t.slice(2,4)}`:'All day',location});
+  });
+  calEvents=events.sort((a,b)=>a.time.localeCompare(b.time));
+  renderCal();
+}
+
+const cc=['var(--accent)','var(--blue)','var(--purple)','var(--teal)','var(--amber)'];
+function renderCal(){
+  if(!calEvents.length){ document.getElementById('cal-body').innerHTML='<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">No events for today in imported file.</div>'; return; }
+  document.getElementById('cal-body').innerHTML=calEvents.map((e,i)=>`
+    <div class="cal-event">
+      <div class="cal-time-col">${e.time}</div>
+      <div class="cal-dot" style="background:${cc[i%cc.length]}"></div>
+      <div class="cal-info"><div class="cal-title">${e.summary}</div>${e.location?`<div class="cal-meta">${e.location}</div>`:''}</div>
+    </div>`).join('');
+}
+
+// ── AI BRIEFING ──
+async function generateBriefing(){
+  const btn=document.getElementById('briefing-btn');
+  const out=document.getElementById('briefing-output');
+  btn.disabled=true; out.textContent='Claude is writing your briefing...';
+  const emails=gmailEmails.length?gmailEmails.slice(0,5).map(e=>`- ${e.from}: "${e.subject}"`).join('\n'):'No Gmail connected.';
+  const cal=calEvents.length?calEvents.map(e=>`- ${e.time}: ${e.summary}`).join('\n'):'No calendar events.';
+  const tsk=tasks.filter(t=>!t.done).slice(0,5).map(t=>`- [${t.track}] ${t.text}`).join('\n')||'No open tasks.';
+  const days=Math.ceil((new Date('2025-10-04')-new Date())/864e5);
+  const today=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        messages:[{role:'user',content:`You are Isaiah's morning briefing AI. Isaiah is 19, entrepreneur, Ironman athlete, financial advisor trainee, GCU senior, Instagram creator. Be direct, sharp, punchy. Short sentences. No fluff.\n\nTODAY: ${today}\nDAYS TO IRONMAN WACO: ${days}\n\nEMAILS:\n${emails}\n\nCALENDAR:\n${cal}\n\nOPEN TASKS:\n${tsk}\n\nWrite briefing under 180 words: 1) Energy setter 2) Most urgent email 3) Key calendar event 4) Top 2 tasks before noon 5) Ironman motivation. Line breaks between sections.`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'Could not generate briefing.';
+    out.textContent='';
+    let i=0; const iv=setInterval(()=>{ out.textContent+=text[i]; i++; if(i>=text.length)clearInterval(iv); },12);
+  } catch(e){ out.textContent='Error — check API connection.'; }
+  btn.disabled=false;
+}
+
+// ── TASKS ──
+function saveTasks(){ localStorage.setItem('iz_tasks',JSON.stringify(tasks)); }
+function addTask(){
+  const v=document.getElementById('task-input').value.trim();
+  if(!v) return;
+  tasks.unshift({id:Date.now(),text:v,track:document.getElementById('task-track').value,done:false});
+  document.getElementById('task-input').value='';
+  saveTasks(); renderTasks();
+}
+function toggleTask(id){ const t=tasks.find(t=>t.id===id); if(t){t.done=!t.done;saveTasks();renderTasks();} }
+function deleteTask(id){ tasks=tasks.filter(t=>t.id!==id); saveTasks(); renderTasks(); }
+function renderTasks(){
+  const el=document.getElementById('task-list');
+  const s=[...tasks].sort((a,b)=>a.done-b.done);
+  el.innerHTML=s.length?s.map(t=>`
+    <div class="task-item">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})">
+        <svg viewBox="0 0 10 10" fill="none" stroke="#080808" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+      </div>
+      <div class="task-text ${t.done?'done':''}">${t.text}</div>
+      <span class="task-track-badge ${t.track}">${t.track.toUpperCase()}</span>
+      <div class="task-del" onclick="deleteTask(${t.id})"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>`).join(''):'<div style="padding:14px 0;color:var(--muted);font-size:13px;text-align:center">No tasks yet.</div>';
+  const done=tasks.filter(t=>t.done).length;
+  document.getElementById('task-count').textContent=`${done}/${tasks.length} done`;
+}
+if(!tasks.length){ tasks=[{id:1,text:'Study for Series 65 / SIE — 2 chapters',track:'exam',done:false},{id:2,text:'Morning swim session — 1500m Z2',track:'ironman',done:false},{id:3,text:'Reply to brand DMs on Instagram',track:'ig',done:false},{id:4,text:'Submit GCU assignment',track:'gcu',done:false}]; saveTasks(); }
+renderTasks();
+
+// ── VIPS ──
+function saveVIPs(){ localStorage.setItem('iz_vips',JSON.stringify(vips)); }
+function addVIP(){
+  const n=document.getElementById('vip-name').value.trim(); if(!n) return;
+  const r=document.getElementById('vip-role').value.trim();
+  const cols=['#c8f060','#5ab4f0','#38d0a0','#a080f0','#f0a030'];
+  vips.push({name:n,role:r,color:cols[vips.length%cols.length],initials:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),responded:false});
+  document.getElementById('vip-name').value=''; document.getElementById('vip-role').value='';
+  saveVIPs(); renderVIPs();
+}
+function toggleVIP(i){ vips[i].responded=!vips[i].responded; saveVIPs(); renderVIPs(); }
+function renderVIPs(){
+  document.getElementById('vip-list').innerHTML=vips.map((v,i)=>`
+    <div class="vip-item">
+      <div class="vip-avatar" style="background:${v.color}22;color:${v.color};border:1px solid ${v.color}33">${v.initials}</div>
+      <div class="vip-info"><div class="vip-name">${v.name}</div><div class="vip-role">${v.role||'—'}</div></div>
+      <span class="vip-responded ${v.responded?'yes':'no'}">${v.responded?'REPLIED':'PENDING'}</span>
+      <button class="vip-toggle ${v.responded?'done':''}" onclick="toggleVIP(${i})">
+        <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>`).join('');
+}
+renderVIPs();
+
+// ── INSTAGRAM ──
+function saveIG(){ localStorage.setItem('iz_ig',JSON.stringify(igState)); }
+function updateIGCountdown(now){
+  const next=new Date(now); next.setHours(9,0,0,0);
+  if(now>=next){ next.setHours(13,0,0,0); }
+  if(now>=next){ next.setHours(20,0,0,0); }
+  if(now>=next){ next.setDate(next.getDate()+1); next.setHours(9,0,0,0); }
+  const d=next-now,h=Math.floor(d/36e5),m=Math.floor((d%36e5)/6e4),s=Math.floor((d%6e4)/1e3);
+  document.getElementById('ig-countdown').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function markIG(type){
+  igState[type]=true; saveIG();
+  const el=document.getElementById('c-'+type);
+  el.textContent='Done ✓'; el.style.color='var(--teal)';
+  igState.streak=Math.max(igState.streak,1);
+  document.getElementById('ig-streak').textContent=igState.streak;
+  const done=['morning','reply','post'].filter(k=>igState[k]).length;
+  document.getElementById('ig-done-count').textContent=done+'/3';
+  if(done===3){ igState.streak++; saveIG(); document.getElementById('ig-streak').textContent=igState.streak; showToast('All 3 done — streak extended!'); }
+}
+if(igState.morning){ document.getElementById('c-morning').textContent='Done ✓'; document.getElementById('c-morning').style.color='var(--teal)'; }
+if(igState.reply){ document.getElementById('c-reply').textContent='Done ✓'; document.getElementById('c-reply').style.color='var(--teal)'; }
+if(igState.post){ document.getElementById('c-post').textContent='Done ✓'; document.getElementById('c-post').style.color='var(--teal)'; }
+document.getElementById('ig-streak').textContent=igState.streak||0;
+document.getElementById('ig-done-count').textContent=['morning','reply','post'].filter(k=>igState[k]).length+'/3';
+
+// ── DAILY RESET ──
+const today=new Date().toDateString();
+if(localStorage.getItem('iz_reset')!==today){
+  vips.forEach(v=>v.responded=false); saveVIPs();
+  igState.morning=false; igState.reply=false; igState.post=false; saveIG();
+  localStorage.setItem('iz_reset',today);
+  renderVIPs();
+}
+
+// ── TOAST ──
+function showToast(m){ const e=document.getElementById('toast'); e.textContent=m; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),3000); }
+
+// ── INIT ──
+checkOAuthCallback();
+</script>
+</body>
+</html>
